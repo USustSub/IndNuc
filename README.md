@@ -9,6 +9,7 @@ This repository contains a MATLAB-based seismo-thermomechanical (STM) model. It 
 ## Getting Started
 
 To run the simulation:
+
 1. Open MATLAB and navigate to the repository folder.
 2. Run `Main-code.m`.
 3. The script will automatically load parameters from `input.mat`, generate the staggered grid, and begin solving the partial differential equations (PDEs).
@@ -22,6 +23,7 @@ To run the simulation:
 ## Configuration & Inputs
 
 All model parameters can be easily modified within the input files. Key adjustable parameters include:
+
 * **Geometry:** Fault dip angle, model dimensions, and grid node counts.
 * **Material Properties:** Densities (rock, fluid, gas), shear wave speed, Poisson ratio, and bulk modulus.
 * **Friction (Rate-and-State):** Direct effect ($a$), evolution effect ($b$), characteristic slip distance ($L$), and dynamic slip weakening velocity.
@@ -30,6 +32,7 @@ All model parameters can be easily modified within the input files. Key adjustab
 ## Outputs
 
 The code generates multiple outputs to help visualize the fault's behavior over time:
+
 * `output.txt`: A text file saved at every time step containing the elapsed model time, running time, min/max slip rates, and maximal displacement.
 * **Data Checkpoints:** The script saves `.mat` files of the data at different time steps so users can reload data without rerunning the entire simulation.
 * **Visuals:** The code automatically generates plots and a movie of the simulation, which can be saved at the end of the run.
@@ -37,6 +40,7 @@ The code generates multiple outputs to help visualize the fault's behavior over 
 ## Model Physics
 
 The simulation operates on a 2D plain strain model (depth 2000m to 4000m) using a fully staggered grid. The physics engine relies on:
+
 * Rate-and-State Friction (Aging Law).
 * Hooke's Law for calculating subsurface stress and strain.
 * Lithostatic pressure gradients with hydrostatic fluid and gas pressures.

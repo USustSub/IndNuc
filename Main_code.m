@@ -8,6 +8,9 @@ tic;   %start the counting of running time of the model.
 
 clear all;
 
+addpath('.\source\')
+addpath('.\visualization\')
+
 colordot='r.';              %Red lines with . = only dots or .- = line+dot
 generate_input();           %Call the input file
 load('input.mat');          %Load in the parameters in this matlab code

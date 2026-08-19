@@ -1,206 +1,55 @@
 function RH=build_RH(lambda,G,sina,cosa,dPdt,Biot,Nx,Ny,N,dx,dy,y,V,z,dz,param)
-    TBt=param.BZb-param.ytop;
-    SSt=param.TBb-param.ytop;
-    SSb=param.SSb-param.ytop;
-    offset=param.offset;
-    sina=1; %%
+% BP3-QD right-hand side: prescribed tangential velocity jump on the fault.
+%
+% GRID STRETCHING: nothing here depends on the mesh, and dx/dy are unused. Every
+% row this function writes to is algebraic -- a prescribed velocity on a row
+% whose LH coefficients are +/-1 (side and bottom boundaries, the fault jump) --
+% so no spacing enters. That remains true only while those rows keep unit
+% scaling; if a future change scales them by a local dx, the matching factor has
+% to be applied here too.
 
-    dPdt.L=dPdt.L*Biot;
-    dPdt.R=dPdt.R*Biot;
-    % d2Pdt.L=[0;diff(movmean(dPdt.L,2,"Endpoints","discard"));0];
-    % d2Pdt.R=[0;diff(movmean(dPdt.R,2,"Endpoints","discard"));0];
-    d2Pdt.L=[0;diff(dPdt.L)];
-    d2Pdt.R=[0;diff(dPdt.R)];
+RH=zeros(N,1);
+fault_ix=(Nx+1)/2;
 
-    RH=zeros(N,1);
-    for ix=1:Nx+1
-        for iy=1:Ny+1
-            kux=((ix-1)*(Ny+1)+iy-1)*2+1;
-            kuy=kux+1;
-            if (iy<Ny+1)
-                if (ix==1)
-                elseif (ix==Nx+1)
-                elseif (iy==1)
-                elseif (iy==Ny)
-                elseif (ix==(Nx+1)/2)
-                    RH(kuy)=V(iy);
-                elseif (ix==(Nx+1)/2+1)
-%                 elseif (iy==1)
-%                     RH(kuy)=0;
-%                 elseif (iy==Ny)
-%                     RH(kuy)=0;
-%                     if (ix<=(Nx+1)/2)
-%                         RH(kuy)=-Vp;
-%                     else
-%                         RH(kuy)=Vp;
-%                     end
-                else
-                    GA=G(iy,ix);GB=G(iy+1,ix);GC=(GA+GB)/2;
-%                     RH(kuy)=-rho*g*sina*dx*dx/G*0;
-%                     if (z(iy)+dz/2>SSt&&z(iy)-dz/2<=SSt&&ix>=(Nx+1)/2+1)%
-%                         RH(kuy)=dPdt/dy*dx*dx/GC*sina;
-%                     end
-%                     if (z(iy)+dz/2>SSb&&z(iy)-dz/2<=SSb&&ix>=(Nx+1)/2+1)
-%                         RH(kuy)=-dPdt/dy*dx*dx/GC*sina;
-%                     end
-%                     if (z(iy)+dz/2>SSt-offset&&z(iy)-dz/2<=SSt-offset&&ix<=(Nx+1)/2)
-%                         RH(kuy)=dPdt/dy*dx*dx/GC*sina;
-%                     end
-%                     if (z(iy)+dz/2>SSb-offset&&z(iy)-dz/2<=SSb-offset&&ix<=(Nx+1)/2)
-%                         RH(kuy)=-dPdt/dy*dx*dx/GC*sina;
-%                     end
-                    % if (z(iy)>TBt&&z(iy-1)<=TBt&&ix>=(Nx+1)/2+1)%
-                    %     RH(kuy)=dPdtTB/dy*dx*dx/GC*sina;
-                    % end
-                    % if (z(iy)>SSt&&z(iy-1)<=SSt&&ix>=(Nx+1)/2+1)%
-                    %     RH(kuy)=(dPdt-dPdtTB)/dy*dx*dx/GC*sina;
-                    % end
-                    % if (z(iy+1)>SSb&&z(iy)<=SSb&&ix>=(Nx+1)/2+1)
-                    %     RH(kuy)=-dPdt/dy*dx*dx/GC*sina;
-                    % end
-
-                    if (ix>=(Nx+1)/2+1)
-                        RH(kuy)=(d2Pdt.R(iy)+d2Pdt.R(iy+1))/2/dy*dx*dx/GC;
-                    end
-                    if (ix<=(Nx+1)/2)
-                        RH(kuy)=(d2Pdt.L(iy)+d2Pdt.L(iy+1))/2/dy*dx*dx/GC;
-                    end
-
-                    % if (z(iy)>TBt-offset&&z(iy-1)<=TBt-offset&&ix<=(Nx+1)/2)
-                    %     RH(kuy)=dPdtTB/dy*dx*dx/GC*sina;
-                    % end
-                    % if (z(iy)>SSt-offset&&z(iy-1)<=SSt-offset&&ix<=(Nx+1)/2)
-                    %     RH(kuy)=(dPdt-dPdtTB)/dy*dx*dx/GC*sina;
-                    % end
-                    % if (z(iy+1)>SSb-offset&&z(iy)<=SSb-offset&&ix<=(Nx+1)/2)
-                    %     RH(kuy)=-dPdt/dy*dx*dx/GC*sina;
-                    % end
-                end
-            end
-            if (ix<Nx+1)
-                if (iy==1)
-                elseif (iy==Ny+1)
-                elseif (ix==1)
-                elseif (ix==Nx)
-                elseif (ix==(Nx+1)/2)
-                    GA=G(iy,ix-1);GB=G(iy,ix+1);GC=(GA+GB)/2;
-%                     if (z(iy-1)>SSt-offset&&z(iy-1)<=SSt)%
-%                         RH(kux)=-dPdt*dx/GC;
-%                     end
-%                     if (z(iy)>SSb-offset&&z(iy)<=SSb)
-%                         RH(kux)=dPdt*dx/GC;
-%                     end
-                    % RH(kux)=0;
-                    % if (z(iy-1)>TBt-offset&&z(iy-1)<=SSt-offset)%
-                    %     RH(kux)=RH(kux)-dPdtTB*dx/GC;
-                    % end
-                    % if (z(iy-1)>SSt-offset&&z(iy-1)<=SSb-offset)%
-                    %     RH(kux)=RH(kux)-dPdt*dx/GC;
-                    % end
-                    % if (z(iy)>TBt&&z(iy)<=SSt)
-                    %     RH(kux)=RH(kux)+dPdtTB*dx/GC;
-                    % end
-                    % if (z(iy)>SSt&&z(iy)<=SSb)
-                    %     RH(kux)=RH(kux)+dPdt*dx/GC;
-                    % end
-
-                    RH(kux)=(dPdt.R(iy)-dPdt.L(iy)+dPdt.R(iy-1)-dPdt.L(iy-1))/2*dx/GC;
-                else
-                    GA=G(iy-1,ix);GB=G(iy,ix);GC=(GA+GB)/2;
-%                     RH(kux)=rho*g*sina*cosa*dx*dx/G*0;
-%                     if (z(iy)+dz/2>SSb&&z(iy)-dz/2<=SSb&&ix>(Nx+1)/2+1)
-%                         RH(kux)=dPdt/dy*dx*dx/GC*sina*cosa;
-%                     end
-%                     if (z(iy)+dz/2>SSb-offset&&z(iy)-dz/2<=SSb-offset&&ix<(Nx+1)/2+1)
-%                         RH(kux)=dPdt/dy*dx*dx/GC*sina*cosa;
-%                     end
-%                     if (z(iy)+dz/2>SSt&&z(iy)-dz/2<=SSt&&ix>(Nx+1)/2+1)
-%                         RH(kux)=-dPdt/dy*dx*dx/GC*sina*cosa;
-%                     end
-%                     if (z(iy)+dz/2>SSt-offset&&z(iy)-dz/2<=SSt-offset&&ix<(Nx+1)/2+1)
-%                         RH(kux)=-dPdt/dy*dx*dx/GC*sina*cosa;
-%                     end
-                    % if (z(iy)>TBt&&z(iy-1)<=TBt&&ix>(Nx+1)/2+1)%okay
-                    %     RH(kux)=-dPdtTB/dy*dx*dx/GC*sina*cosa;
-                    % end
-                    % if (z(iy)>SSt&&z(iy-1)<=SSt&&ix>(Nx+1)/2+1)%okay
-                    %     RH(kux)=(-dPdt+dPdtTB)/dy*dx*dx/GC*sina*cosa;
-                    % end
-                    % if (z(iy)>SSb&&z(iy-1)<=SSb&&ix>(Nx+1)/2+1)
-                    %     RH(kux)=dPdt/dy*dx*dx/GC*sina*cosa;
-                    % end
-
-                    if (ix>(Nx+1)/2+1)
-                        RH(kux)=-d2Pdt.R(iy)/dy*dx*dx/GC*cosa;
-                    end
-                    if (ix<(Nx+1)/2+1)
-                        RH(kux)=-d2Pdt.L(iy)/dy*dx*dx/GC*cosa;
-                    end
-
-                    % if (z(iy)>TBt-offset&&z(iy-1)<=TBt-offset&&ix<(Nx+1)/2+1)%okay
-                    %     RH(kux)=-dPdtTB/dy*dx*dx/GC*sina*cosa;
-                    % end
-                    % if (z(iy)>SSt-offset&&z(iy-1)<=SSt-offset&&ix<(Nx+1)/2+1)%okay
-                    %     RH(kux)=(-dPdt+dPdtTB)/dy*dx*dx/GC*sina*cosa;
-                    % end
-                    % if (z(iy)>SSb-offset&&z(iy-1)<=SSb-offset&&ix<(Nx+1)/2+1)
-                    %     RH(kux)=dPdt/dy*dx*dx/GC*sina*cosa;
-                    % end
-                end
-            end
-        end
+% Symmetric far-field plate loading. In the oblique basis, uy is the
+% fault-parallel velocity component. The LH boundary row averages the ghost
+% and interior values, so its right-hand side is twice the face velocity.
+if isfield(param,'load_side_boundaries') && param.load_side_boundaries
+    left_velocity=-param.Vp/2;
+    right_velocity=param.Vp/2;
+    for iy=1:Ny
+        kuy_left=(iy-1)*2+2;
+        kuy_right=(Nx*(Ny+1)+iy-1)*2+2;
+        RH(kuy_left)=2*left_velocity;
+        RH(kuy_right)=2*right_velocity;
     end
-
 end
 
-% case 1
-%                     if (y(iy)==1050&&ix>(Nx+1)/2+1)
-%                         RH(kux)=dPdt/dy*dx*dx/G*sina*cosa;
-%                     end
-%                     if (y(iy)==1000&&ix<(Nx+1)/2+1)
-%                         RH(kux)=dPdt/dy*dx*dx/G*sina*cosa;
-%                     end
-%                     if (y(iy-1)==850&&ix>(Nx+1)/2+1)
-%                         RH(kux)=-dPdt/dy*dx*dx/G*sina*cosa;
-%                     end
-%                     if (y(iy-1)==800&&ix<(Nx+1)/2+1)
-%                         RH(kux)=-dPdt/dy*dx*dx/G*sina*cosa;
-%                     end
-% case 2
-%                     if (y(iy)==850&&ix>(Nx+1)/2+1)
-%                         RH(kux)=-dPdt/dy*dx*dx/G*sina*cosa/2;
-%                     end
-%                     if (y(iy)==1050&&ix>(Nx+1)/2+1)
-%                         RH(kux)=dPdt/dy*dx*dx/G*sina*cosa/2;
-%                     end
-%                     if (y(iy)==800&&ix<(Nx+1)/2+1)
-%                         RH(kux)=-dPdt/dy*dx*dx/G*sina*cosa/2;
-%                     end
-%                     if (y(iy)==1000&&ix<(Nx+1)/2+1)
-%                         RH(kux)=dPdt/dy*dx*dx/G*sina*cosa/2;
-%                     end
-%                     if (y(iy-1)==850&&ix>(Nx+1)/2+1)
-%                         RH(kux)=-dPdt/dy*dx*dx/G*sina*cosa/2;
-%                     end
-%                     if (y(iy-1)==1050&&ix>(Nx+1)/2+1)
-%                         RH(kux)=dPdt/dy*dx*dx/G*sina*cosa/2;
-%                     end
-%                     if (y(iy-1)==800&&ix<(Nx+1)/2+1)
-%                         RH(kux)=-dPdt/dy*dx*dx/G*sina*cosa/2;
-%                     end
-%                     if (y(iy-1)==1000&&ix<(Nx+1)/2+1)
-%                         RH(kux)=dPdt/dy*dx*dx/G*sina*cosa/2;
-%                     end
-% case 3
-%                     if (y(iy)==1050&&ix>(Nx+1)/2+1)
-%                         RH(kux)=dPdt/dy*dx*dx/G*sina*cosa;
-%                     end
-%                     if (y(iy)==1000&&ix<(Nx+1)/2+1)
-%                         RH(kux)=dPdt/dy*dx*dx/G*sina*cosa;
-%                     end
-%                     if (y(iy)==850&&ix>(Nx+1)/2+1)
-%                         RH(kux)=-dPdt/dy*dx*dx/G*sina*cosa;
-%                     end
-%                     if (y(iy)==800&&ix<(Nx+1)/2+1)
-%                         RH(kux)=-dPdt/dy*dx*dx/G*sina*cosa;
-%                     end
+% For a compact total-velocity domain, continue the rigid velocities along
+% the two halves of the bottom boundary. Otherwise the deep-creep jump is
+% concentrated at the single fault/bottom node while its neighbors are
+% pinned to zero, creating a large artificial stress concentration.
+if isfield(param,'load_bottom_boundaries') && param.load_bottom_boundaries
+    bottom_left=-param.VL/2;
+    bottom_right=param.VL/2;
+    for ix=2:Nx
+        if ix==fault_ix
+            continue;
+        end
+        kuy=((ix-1)*(Ny+1)+Ny-1)*2+2;
+        if ix<fault_ix
+            RH(kuy)=bottom_left;
+        else
+            RH(kuy)=bottom_right;
+        end
+    end
+end
+
+% iy starts at 1: the surface fault node carries the jump row too, matching the
+% build_LH branch that excludes both fault columns from the sigma_zz=0 case.
+% The bottom fault intersection (iy==Ny) is the deep-creep driver.
+for iy=1:Ny
+    kuy=((fault_ix-1)*(Ny+1)+iy-1)*2+2;
+    RH(kuy)=V(iy);
+end
+end
